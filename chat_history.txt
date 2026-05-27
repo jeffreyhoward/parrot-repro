@@ -1,0 +1,106 @@
+User: === CORE PROCESS ===
+9698 bash -c echo '=== CORE PROCESS ==='; pgrep -af 'parrot.serve.http_server' || true
+=== CORE PROCESS ===
+9698 bash -c echo '=== CORE PROCESS ==='; pgrep -af 'parrot.serve.http_server' || true
+
+=== ENGINE PROCESS ===
+9700 bash -c echo '=== ENGINE PROCESS ==='; pgrep -af 'parrot.engine.http_server' || true
+=== ENGINE PROCESS ===
+9700 bash -c echo '=== ENGINE PROCESS ==='; pgrep -af 'parrot.engine.http_server' || true
+
+=== CORE STDOUT ===
+=== CORE STDOUT ===
+
+=== CORE STDERR ===
+=== CORE STDERR ===
+
+=== ENGINE STDOUT ===
+=== ENGINE STDOUT ===
+
+=== ENGINE STDERR ===
+Traceback ... ModuleNotFoundError: No module named 'vllm'
+... plus additional startup and connection-refused logs for Parrot core/engine and direct client run.
+
+Assistant: Identified new blocker as missing `vllm`; provided a full fix cell to install local `3rdparty/vllm` and a follow-up debug cell.
+
+User: Ran the debug flow and shared output showing the engine now starts and loads weights but the direct client still cannot connect to localhost:9000.
+
+Assistant: Provided a diagnostic cell to check processes, stdout/stderr, logs, and direct client run.
+
+User: Shared output showing the engine log reaches model instantiation/loading and the direct client still gets connection refused.
+
+Assistant: Replaced the helper-writer cell so the launch script waits on an engine readiness log line instead of a fixed sleep, then asked for a rerun.
+
+User: Asked whether the output should take a long time going through each chunk.
+Assistant: Explained the slow part is model loading and that waiting a few minutes can be normal.
+
+User: Asked how many times the sleep loop should run.
+Assistant: Explained it checks once per second up to 180 iterations.
+
+User: Shared a full rerun showing core ready quickly, engine waited the full timeout, then exited with “Engine did not become ready”.
+Assistant: Explained that the remaining problem looked operational, likely requiring a longer ready wait.
+
+User: Asked for a simplified, click-through notebook flow.
+Assistant: Rewrote `Experiment.ipynb` into a smaller Figure 11(a) flow with config, helper-prep, benchmark-run, and plot cells.
+
+User: Asked why the repo code could not just be run as-is.
+Assistant: Explained the repo contains demo apps/runtime/configs but not a polished turnkey Figure 11 reproduction harness.
+
+User: Shared a long run where Parrot/vLLM produced JSONDecodeError during semantic calls and HuggingFace failed because `accelerate` was missing.
+Assistant: Explained that Parrot/vLLM timings were fake failure timings and the HF baseline needed `accelerate`.
+
+User: Asked what to do next.
+Assistant: Recommended making Parrot failures fail hard, inspecting backend logs for semantic-call failure, installing `accelerate`, and only then regenerating the plot.
+
+User: Asked whether an easier Parrot-specific graph exists.
+Assistant: Investigated the repo and found first-party kernel/shared-prefix benchmark code and tests, concluding a shared-prefix microbenchmark would be easier than the chain-summarization app benchmark.
+
+Assistant: Replaced the old Figure 11 section in `Experiment.ipynb` with a shared-prefix kernel benchmark based on Parrot’s builtin runner and attention kernels.
+
+User: Hit dependency resolver warnings and later an editable-install failure because pip build isolation could not find `torch`.
+Assistant: Clarified that the dependency warnings were not fatal, then replaced the prep cell to install Parrot with `--no-build-isolation`.
+
+User: Asked why the notebook spends so much time uninstalling.
+Assistant: Explained that `--force-reinstall` causes unnecessary uninstall/reinstall cycles and suggested switching to lighter installs.
+
+User: Ran the shared-prefix kernel benchmark and hit CUDA OOM during KV cache allocation.
+Assistant: Reduced the config defaults to `NUM_KV_CACHE_BLOCKS = 1024` and `MAX_SEQ_LEN = 4096`.
+
+User: Reran and then hit a Triton assertion during generation in the shared-prefix path.
+Assistant: Narrowed the benchmark to a fill-only shared-prefix microbenchmark, avoiding generation entirely, and provided replacement helper/run/plot cells.
+
+User: Asked which paper figure this corresponds to.
+Assistant: Explained that it does not exactly reproduce a numbered figure; it is a Parrot-specific microbenchmark derived from shipped code.
+
+User: Asked whether the observed overlap in the plot was expected.
+Assistant: Said the notebook behavior was plausible but the overlapping lines were not a convincing Parrot advantage signal.
+
+User: Asked whether this was just because of hardware.
+Assistant: Explained that hardware matters, but the benchmark and fallback path likely fail to expose Parrot’s advantage clearly.
+
+User: Asked whether this meant “we essentially didn’t even do Parrot.”
+Assistant: Clarified that the run used real Parrot code and kernels, but not the original end-to-end benchmark or a faithful numbered paper figure.
+
+User: Commented that the environment seems fickle for an older paper.
+Assistant: Agreed and summarized that much of the effort had gone into environment archaeology.
+
+User: Asked to add the required changes to the local file and remove needless verbosity.
+Assistant: Updated `Experiment.ipynb` to the fill-only benchmark with leaner wording and removed temporary helper artifacts.
+
+User: Asked to remove text suggesting the notebook was not done and to add a comment that the user needs to pick the GPU manually.
+Assistant: Updated the intro/hardware wording so it describes the current workflow plainly and says GPU selection should be manual because the automatic method was unreliable.
+
+User: Asked which GPUs strictly can be used from a list.
+Assistant: Recommended A100/H100/A30 NVIDIA nodes and advised against P100/M40/K80/MI100 for the current notebook.
+
+User: Shared Chameleon lease errors for `compute_liquid` and then `compute_liqid`.
+Assistant: Noted the typo first, then explained that the corrected query still failed because no `compute_liqid` node was free in the requested window and suggested shorter/later leases or switching node types.
+
+User: Asked how to check for too many servers and then how to delete them.
+Assistant: Pointed to the Chameleon dashboard instances page, explained duplicate server names were causing ambiguity, and provided the relevant site dashboard URLs.
+
+User: Asked whether Codex has a built-in export-chat function.
+Assistant: Said there is no built-in export function I could rely on here, but I could create a local `.txt` transcript file.
+
+User: Requested that transcript file.
+Assistant: Created `chat_history.txt` in the workspace with this session transcript.
